@@ -1,1 +1,3 @@
-Repository for Telegram bots on Python using pyTelegramBotAPI library
+Telegram bot that creates links out of the text
+using TelegramBotAPI (pyTelegramBotAPI library on Python https://github.com/eternnoir/pyTelegramBotAPI#general-api-documentation)
+libraries: pyTelegramBotAPI
