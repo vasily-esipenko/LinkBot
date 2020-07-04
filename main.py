@@ -1,38 +1,35 @@
-import constants
-import telebot
-from telebot import types
+from aiogram import Bot, Dispatcher, executor, types
+from constants import token, social_networks, urls
 
-bot = telebot.TeleBot(constants.token)
+bot = Bot(token)
+dp = Dispatcher(bot)
 
-markup = types.ReplyKeyboardMarkup(True, True)
-item1 = types.KeyboardButton("Instagram")
-item2 = types.KeyboardButton("VK")
-item3 = types.KeyboardButton("Twitter")
-markup.add(item1, item2, item3)
+markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+markup.row("VK", "Instagram", "Twitter")
 
 
-@bot.message_handler(commands=["start"])
-def start_handler(message):
-    bot.send_message(message.chat.id, "Привет! Это LinkBot. Введите username")
+@dp.message_handler(commands=["start"])
+async def start_answer(message: types.Message):
+    await message.answer("Привет, это LinkBot! С моей помошью вы можете получить ссылки на профили в соцсетях.\n Введите юзернейм:")
 
 
-@bot.message_handler(commands=["help"])
-def help_handler(message):
-    bot.send_message(message.chat.id, "Возникли вопросы? Пишите: @Vasily_Esipenko")
+@dp.message_handler(commands=["help"])
+async def help_answer(message: types.Message):
+    await message.answer("Возники вопросы? Пишите сюда: @Vasily_Esipenko")
 
 
-@bot.message_handler(content_types=["text"])
-def text_handler(message):
-    if message.text != "Instagram" and message.text != "VK" and message.text != "Twitter":
-        global username
-        username = message.text
-        bot.send_message(message.chat.id, "Отлично, теперь выберите соцсеть:", reply_markup=markup)
-    elif message.text == "Instagram":
-        bot.send_message(message.chat.id, "https://www.instagram.com/{}".format(username))
-    elif message.text == "VK":
-        bot.send_message(message.chat.id, "https://vk.com/{}".format(username))
-    elif message.text == "Twitter":
-        bot.send_message(message.chat.id, "https://twitter.com/{}".format(username))
+@dp.message_handler(content_types=["text"])
+async def text_answer(message: types.Message):
+    global username
+    if message.text not in social_networks:
+        if " " not in message.text:
+            username = message.text.lower()
+            await message.answer("Отлично! Теперь выберите соцсеть:", reply_markup=markup)
+        else:
+            await message.answer("Что-то пошло не так... Попробуйте снова")
+    elif message.text in urls:
+        await message.answer(f"Вот ваша ссылка:\n{urls[message.text].format(username)}")
 
 
-bot.polling()
+if __name__ == "__main__":
+    executor.start_polling(dp, skip_updates=False)
